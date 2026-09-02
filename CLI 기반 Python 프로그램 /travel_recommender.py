@@ -13,14 +13,13 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
-    # python-dotenv가 없으면 .env 로딩은 건너뛰고 환경변수만 사용한다.
     pass
 
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 KAKAO_KEYWORD_SEARCH_URL = "https://dapi.kakao.com/v2/local/search/keyword.json"
 RESULTS_DIR = "results"
 RESTAURANT_DISPLAY_COUNT = 5
-REQUEST_TIMEOUT = 30  # seconds
+REQUEST_TIMEOUT = 30
 
 def log(message: str) -> None:
     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -79,7 +78,7 @@ def build_genai_client(api_key: str) -> genai.Client:
     """요청마다 새로 만들지 않도록 main()에서 한 번만 생성해 재사용한다."""
     return genai.Client(
         api_key=api_key,
-        http_options=genai_types.HttpOptions(timeout=REQUEST_TIMEOUT * 1000),  # ms 단위
+        http_options=genai_types.HttpOptions(timeout=REQUEST_TIMEOUT * 1000),
     )
 
 
@@ -99,8 +98,7 @@ def extract_json_block(text: str) -> dict:
     cleaned = text.strip()
     cleaned = re.sub(r"^```(json)?", "", cleaned.strip(), flags=re.IGNORECASE).strip()
     cleaned = re.sub(r"```$", "", cleaned.strip()).strip()
-
-    # 첫 '{' 부터 마지막 '}' 까지만 추출 (앞뒤 잡텍스트 방지)
+    
     start = cleaned.find("{")
     end = cleaned.rfind("}")
     if start == -1 or end == -1 or end < start:
@@ -152,7 +150,7 @@ def validate_schema(data: dict) -> bool:
 def get_first_recommendation(date_str: str, client: genai.Client, errors: list) -> dict:
     log("1단계: Gemini API로 날씨/행사 기반 1차 추천을 요청합니다...")
 
-    for attempt in range(2):  # 최초 1회 + 재시도 1회
+    for attempt in range(2):
         retry = attempt == 1
         if retry:
             log("  - JSON 파싱 실패로 재시도합니다 (1회 한정)...")
@@ -168,8 +166,7 @@ def get_first_recommendation(date_str: str, client: genai.Client, errors: list) 
             msg = f"1차 추천 생성 오류 (시도 {attempt + 1}/2, {type(e).__name__}): {e}"
             log(f"  - {msg}")
             errors.append(msg)
-
-    # 두 번 모두 실패한 경우: 기본값으로 폴백하여 파이프라인은 계속 진행
+            
     fallback = {
         "recommended_city": "정보 없음",
         "weather": "정보 없음",
@@ -191,7 +188,7 @@ def search_restaurants(city: str, kakao_rest_api_key: str, errors: list) -> list
     headers = {"Authorization": f"KakaoAK {kakao_rest_api_key}"}
     params = {
         "query": f"{city} 맛집",
-        "size": RESTAURANT_DISPLAY_COUNT,  # 최대 15
+        "size": RESTAURANT_DISPLAY_COUNT,
         "page": 1,
         "sort": "accuracy",
     }
@@ -203,7 +200,7 @@ def search_restaurants(city: str, kakao_rest_api_key: str, errors: list) -> list
             params=params,
             timeout=REQUEST_TIMEOUT,
         )
-        # 401(키 오류)/403 등 인증 오류를 포함해 상태코드 오류를 여기서 잡는다.
+        
         response.raise_for_status()
         data = response.json()
         documents = data.get("documents", [])
@@ -216,8 +213,8 @@ def search_restaurants(city: str, kakao_rest_api_key: str, errors: list) -> list
                     "address": item.get("road_address_name") or item.get("address_name", ""),
                     "category": item.get("category_name", ""),
                     "url": item.get("place_url", ""),
-                    "x": item.get("x", ""),  # 경도(longitude)
-                    "y": item.get("y", ""),  # 위도(latitude)
+                    "x": item.get("x", ""),
+                    "y": item.get("y", ""),
                 }
             )
 
@@ -292,7 +289,6 @@ def generate_final_report(
         msg = f"최종 리포트 생성 오류 ({type(e).__name__}): {e}"
         log(f"  - {msg}")
         errors.append(msg)
-        # 최소한의 폴백 리포트를 직접 조립하여 프로그램이 결과 없이 끝나지 않게 한다.
         return build_fallback_report(date_str, first_json, restaurants, errors)
 
 def build_fallback_report(date_str: str, first_json: dict, restaurants: list, errors: list) -> str:
@@ -363,7 +359,6 @@ def main() -> None:
     keys = load_api_keys()
     errors: list = []
 
-    # Gemini 클라이언트는 한 번만 생성해 재사용한다.
     client = build_genai_client(keys["GEMINI_API_KEY"])
 
     first_json = get_first_recommendation(date_str, client, errors)
