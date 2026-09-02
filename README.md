@@ -1,6 +1,6 @@
 # :mountain_railway: 국내 여행 추천 프로그램 :railway_car:
 
-## 01. 프로그램 개요
+## :one: 프로그램 개요
 
 Google Gemini API(`google-genai` 공식 SDK)와 카카오맵 로컬 API(키워드로 장소 검색)를 함께 사용해,
 <br>사용자가 입력한 날짜를 기준으로 국내 여행지를 추천하고 맛집 정보를 곁들인 여행 리포트를 자동으로 생성하는 CLI 프로그램입니다</br>
@@ -14,9 +14,9 @@ Google Gemini API(`google-genai` 공식 SDK)와 카카오맵 로컬 API(키워�
 
 ---
 
-## 02. 실행 방법
+## :two: 실행 방법
 
-### 2.1 사전 준비
+### 2-1. 사전 준비
 
 ```bash
 pip install -r requirements.txt
@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 Python 3.10 이상이 필요합니다
 
-### 2.2 실행 명령어
+### 2-2. 실행 명령어
 
 터미널(또는 VS Code 통합 터미널)에서 아래처럼 실행합니다
 
@@ -40,7 +40,7 @@ python travel_recommender.py -date "2026-10-05"
 
 ---
 
-## 03. API 키 설정 방법
+## :three: API 키 설정 방법
 
 이 프로그램은 두 개의 키가 필요합니다
 
@@ -49,14 +49,14 @@ python travel_recommender.py -date "2026-10-05"
 | `GEMINI_API_KEY` | Google AI Studio | 1차 추천 + 최종 리포트 생성용 |
 | `KAKAO_REST_API_KEY` | Kakao Developers | 맛집(장소) 검색용 |
 
-### 3.1 카카오 REST API 키 발급 및 활성화
+### 3-1. 카카오 REST API 키 발급 및 활성화
 
 1. [Kakao Developers](https://developers.kakao.com)에 로그인 후 애플리케이션을 생성합니다
 2. [내 애플리케이션] > [앱 설정] > [앱 키]에서 **REST API 키**를 복사합니다
 3. **반드시** [내 애플리케이션] > [제품 설정] > **카카오맵** 메뉴로 들어가 "사용 설정" 상태를 **ON**으로 바꿔야 합니다
    <br>이 설정이 꺼져 있으면 키가 맞아도 `403 disabled OPEN_MAP_AND_LOCAL service` 오류가 발생합니다</br>
 
-### 3.2 .env 파일로 설정하기 (권장)
+### 3-2. .env 파일로 설정하기 (권장)
 
 프로젝트 폴더에 `.env.example`을 복사해 `.env` 파일을 만들고 값을 채웁니다
 
@@ -71,7 +71,7 @@ KAKAO_REST_API_KEY=발급받은_카카오_REST_API_키
 
 `python-dotenv`가 설치되어 있으면 프로그램 실행 시 `.env`를 자동으로 읽습니다
 
-### 3.3 환경변수로 직접 설정하기
+### 3-3. 환경변수로 직접 설정하기
 
 ```bash
 # macOS/Linux (현재 터미널 세션에만 적용)
@@ -88,7 +88,7 @@ $env:KAKAO_REST_API_KEY="YOUR_KEY"
 
 ---
 
-## 04. 결과물 확인 방법
+## :four: 결과물 확인 방법
 
 실행이 끝나면 `results/` 폴더 아래에 실행 날짜 기준으로 파일 두 개가 생성됩니다
 
@@ -108,18 +108,18 @@ $env:KAKAO_REST_API_KEY="YOUR_KEY"
 
 ---
 
-## 05. API 키 유출 주의사항
+## :five: API 키 유출 주의사항
 
 - **API 키를 코드에 직접 작성하지 않습니다.** 이 프로그램은 `GEMINI_API_KEY`,
-  `KAKAO_REST_API_KEY`를 항상 `.env`/환경변수에서만 읽어옵니다
-- **`.env` 파일은 절대 git에 커밋하거나 압축해서 제출하지 않습니다.**
-  프로젝트에 포함된 `.gitignore`에 `.env`가 이미 등록되어 있으니,
+  <br>`KAKAO_REST_API_KEY`를 항상 `.env`/환경변수에서만 읽어옵니다</br>
+- **`.env` 파일은 절대 git에 커밋하거나 압축해서 제출하지 않습니다**
+  <br>프로젝트에 포함된 `.gitignore`에 `.env`가 이미 등록되어 있으니,</br>
   새로 프로젝트를 만든 경우에도 반드시 확인하세요.
-- **README, 로그, 결과 파일(`results/*.json`, `*.md`)에도 키 값이 남지 않도록 주의합니다.**
-  이 프로그램은 오류 메시지에 키 값 자체를 출력하지 않지만,
+- **README, 로그, 결과 파일(`results/*.json`, `*.md`)에도 키 값이 남지 않도록 주의합니다**
+  <br>이 프로그램은 오류 메시지에 키 값 자체를 출력하지 않지만,</br>
   터미널 화면을 캡처해서 공유할 때 `.env` 내용이나 키가 찍히지 않았는지 한 번 더 확인하세요
 - 키가 실수로 노출되었다면(예: 공개 저장소에 커밋, 캡처 이미지 공유 등)
-  즉시 Google AI Studio / Kakao Developers에서 해당 키를 **폐기(재발급)**하세요
+  <br>즉시 Google AI Studio / Kakao Developers에서 해당 키를 **폐기(재발급)**하세요</br>
   키를 교체해도 코드는 그대로 두고 `.env` 값만 바꾸면 되므로 운영에 지장이 없습니다
 - 카카오 API는 앱별 무료/과금 쿼터가 있으므로, 키가 유출되면 제3자가 내 쿼터를
-  소진하거나 예상치 못한 과금이 발생할 수 있습니다. 정기적으로 키를 교체하는 것도 좋은 습관입니다
+  <br>소진하거나 예상치 못한 과금이 발생할 수 있습니다. 정기적으로 키를 교체하는 것도 좋은 습관입니다</br>
