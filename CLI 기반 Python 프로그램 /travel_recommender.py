@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-"""
-국내 여행 추천 프로그램
-- Google Gemini API (google-genai 공식 SDK) : 날씨/행사 1차 추천(JSON) + 최종 리포트 생성(Markdown)
-- 카카오맵 로컬 API(키워드로 장소 검색) : 추천 도시 기준 맛집 검색
-
-실행 예:
-    python travel_recommender.py -date "2026-10-05"
-"""
-
 import os
 import sys
 import re
@@ -26,28 +16,16 @@ except ImportError:
     # python-dotenv가 없으면 .env 로딩은 건너뛰고 환경변수만 사용한다.
     pass
 
-
-# ----------------------------------------------------------------------------
-# 설정값
-# ----------------------------------------------------------------------------
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
 KAKAO_KEYWORD_SEARCH_URL = "https://dapi.kakao.com/v2/local/search/keyword.json"
 RESULTS_DIR = "results"
 RESTAURANT_DISPLAY_COUNT = 5
 REQUEST_TIMEOUT = 30  # seconds
 
-
-# ----------------------------------------------------------------------------
-# 로그 유틸
-# ----------------------------------------------------------------------------
 def log(message: str) -> None:
     timestamp = datetime.now().strftime("%H:%M:%S")
     print(f"[{timestamp}] {message}")
 
-
-# ----------------------------------------------------------------------------
-# CLI / 입력 검증
-# ----------------------------------------------------------------------------
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Gemini API + 카카오맵 API를 이용한 국내 여행 추천 프로그램"
@@ -71,10 +49,6 @@ def validate_date(date_str: str) -> str:
         print('예시:   python travel_recommender.py -date "2026-10-05"')
         sys.exit(1)
 
-
-# ----------------------------------------------------------------------------
-# API 키 로딩 / 검증
-# ----------------------------------------------------------------------------
 def load_api_keys() -> dict:
     keys = {
         "GEMINI_API_KEY": os.environ.get("GEMINI_API_KEY"),
@@ -101,10 +75,6 @@ def load_api_keys() -> dict:
 
     return keys
 
-
-# ----------------------------------------------------------------------------
-# Gemini API 호출 (google-genai 공식 SDK)
-# ----------------------------------------------------------------------------
 def build_genai_client(api_key: str) -> genai.Client:
     """요청마다 새로 만들지 않도록 main()에서 한 번만 생성해 재사용한다."""
     return genai.Client(
@@ -139,17 +109,12 @@ def extract_json_block(text: str) -> dict:
     json_str = cleaned[start : end + 1]
     return json.loads(json_str)
 
-
-# ----------------------------------------------------------------------------
-# 1단계: 날씨/행사 1차 추천 (Gemini, JSON)
-# ----------------------------------------------------------------------------
 REQUIRED_KEYS_SCHEMA = {
     "recommended_city": str,
     "weather": str,
     "events": list,
     "reason": str,
 }
-
 
 def build_first_prompt(date_str: str, retry: bool = False) -> str:
     base_instruction = f"""
@@ -214,10 +179,6 @@ def get_first_recommendation(date_str: str, client: genai.Client, errors: list) 
     log("  - 1차 추천 생성에 최종 실패. 기본값으로 대체 후 다음 단계로 진행합니다.")
     return fallback
 
-
-# ----------------------------------------------------------------------------
-# 2단계: 맛집 검색 (카카오맵 로컬 API - 키워드로 장소 검색)
-# ----------------------------------------------------------------------------
 def search_restaurants(city: str, kakao_rest_api_key: str, errors: list) -> list:
     log(f"2단계: 카카오맵 API로 '{city}' 맛집을 검색합니다...")
 
@@ -286,10 +247,6 @@ def search_restaurants(city: str, kakao_rest_api_key: str, errors: list) -> list
         errors.append(msg)
         return []
 
-
-# ----------------------------------------------------------------------------
-# 3단계: 최종 리포트 생성 (Gemini, Markdown)
-# ----------------------------------------------------------------------------
 def build_report_prompt(date_str: str, first_json: dict, restaurants: list, errors: list) -> str:
     restaurants_text = (
         json.dumps(restaurants, ensure_ascii=False, indent=2) if restaurants else "[]"
@@ -319,7 +276,6 @@ def build_report_prompt(date_str: str, first_json: dict, restaurants: list, erro
 Markdown 텍스트만 출력하고, 다른 설명이나 코드펜스는 포함하지 마세요.
 """.strip()
 
-
 def generate_final_report(
     date_str: str, first_json: dict, restaurants: list, errors: list, client: genai.Client
 ) -> str:
@@ -338,7 +294,6 @@ def generate_final_report(
         errors.append(msg)
         # 최소한의 폴백 리포트를 직접 조립하여 프로그램이 결과 없이 끝나지 않게 한다.
         return build_fallback_report(date_str, first_json, restaurants, errors)
-
 
 def build_fallback_report(date_str: str, first_json: dict, restaurants: list, errors: list) -> str:
     lines = [f"# {date_str} 국내 여행 추천 리포트 (자동 생성 실패로 인한 대체 리포트)", ""]
@@ -375,10 +330,6 @@ def build_fallback_report(date_str: str, first_json: dict, restaurants: list, er
             lines.append(f"- {e}")
     return "\n".join(lines)
 
-
-# ----------------------------------------------------------------------------
-# 결과 저장
-# ----------------------------------------------------------------------------
 def save_results(
     date_str: str, first_json: dict, restaurants: list, errors: list, report_md: str
 ) -> dict:
@@ -403,10 +354,6 @@ def save_results(
 
     return {"json_path": json_path, "md_path": md_path}
 
-
-# ----------------------------------------------------------------------------
-# 메인
-# ----------------------------------------------------------------------------
 def main() -> None:
     args = parse_args()
     date_str = validate_date(args.date)
