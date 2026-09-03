@@ -71,21 +71,6 @@ KAKAO_REST_API_KEY=발급받은_카카오_REST_API_키
 
 `python-dotenv`가 설치되어 있으면 프로그램 실행 시 `.env`를 자동으로 읽습니다
 
-### 3-3. 환경변수로 직접 설정하기
-
-```bash
-# macOS/Linux (현재 터미널 세션에만 적용)
-export GEMINI_API_KEY="YOUR_KEY"
-export KAKAO_REST_API_KEY="YOUR_KEY"
-
-# Windows PowerShell (현재 세션에만 적용)
-$env:GEMINI_API_KEY="YOUR_KEY"
-$env:KAKAO_REST_API_KEY="YOUR_KEY"
-```
-
-키가 하나라도 설정되어 있지 않으면 프로그램은 즉시 종료되며,
-<br>콘솔에 위 설정 방법이 그대로 안내됩니다</br>
-
 ---
 
 ## :four: 결과물 확인 방법
